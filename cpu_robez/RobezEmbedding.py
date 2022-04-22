@@ -56,7 +56,7 @@ class RobezEmbedding(nn.Module):
         self.embedding_dim = embedding_dim
         self.val_offset = val_offset
         self.seed = seed
-        self.weight = nn.Parameter(_weight, requires_grad = True) # add to parameter
+        self.weight = _weight # add to parameter
         self.weights_size = self.weight.numel()
         self.robez_chunk_size = robez_chunk_size
         self.sparse = sparse

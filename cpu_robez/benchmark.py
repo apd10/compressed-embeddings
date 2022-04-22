@@ -90,14 +90,14 @@ def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_s
                             {
                                 "Model": model_name,
                                 "sparse" : sparse,
-                                "batch_size": [bs],
-                                "memory_size": [mem],
-                                "forward_pass_ms": [forward_pass * 1000],
-                                "gradient_computation_ms": [gradient_computation * 1000],
-                                "backward_pass_ms": [backward_pass * 1000],
-                                "total_time_ms": [forward_pass * 1000 + gradient_computation * 1000 + backward_pass * 1000],
-                                "model size": [cast_bytes_to_memory_string(4 * count_parameters(model))],
-                                "optimizer": [optimizer_name],
+                                "bs": [bs],
+                                "mem_params": [mem],
+                                "forward(ms)": [forward_pass * 1000],
+                                "gradcomp(ms)": [gradient_computation * 1000],
+                                "backward(ms)": [backward_pass * 1000],
+                                "total(ms)": [forward_pass * 1000 + gradient_computation * 1000 + backward_pass * 1000],
+                                "msize": [cast_bytes_to_memory_string(4 * count_parameters(model))],
+                                "optim": [optimizer_name],
                             }
                         )
                         print(infos)
@@ -120,4 +120,4 @@ if __name__ == "__main__":
     sparsity = [False, True]
     my_report = benchmark(nb_embeddings, embeding_dim, batch_sizes, mem_size, sparsity)
     my_report.to_csv("benchmark.csv", index=False)
-    print(tabulate(my_report, headers='keys', tablefmt='pqsl'))
+    print(tabulate(my_report, headers='keys', tablefmt='github'))
