@@ -10,6 +10,7 @@ from tqdm import tqdm as tq
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 
 def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_size: List[int]) -> pd.DataFrame:
@@ -22,6 +23,7 @@ def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_s
         tf.keras.optimizers.Adagrad(learning_rate=0.05),
         tf.keras.optimizers.SGD(learning_rate=0.01),
         tf.keras.optimizers.Adam(learning_rate=0.001),
+        tfa.optimizers.LazyAdam(learning_rate=0.001),
     ]
 
     for optimizer in optimizers:
@@ -99,8 +101,11 @@ if __name__ == "__main__":
 
     nb_embeddings = 1_000_000
     embeding_dim = 100
-    batch_sizes = [64, 512, 4096, 32768]
-    mem_size = [1, 8, 64, 512] + [32768 * 8 ** i for i in range(5)] + [nb_embeddings*embeding_dim]
+    #batch_sizes = [64, 512, 4096, 32768]
+    batch_sizes = [32768]
+    #mem_size = [1, 8, 64, 512] + [32768 * 8 ** i for i in range(5)] + [nb_embeddings*embeding_dim]
+    mem_size=[262144, 2621440, 100000000]
+
 
     my_report = benchmark(nb_embeddings, embeding_dim, batch_sizes, mem_size)
     my_report.to_csv("benchmark.csv", index=False)
