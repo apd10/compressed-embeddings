@@ -1,6 +1,6 @@
 Q1. Why are times for Adam so large as compared to times for other optimizers ? (tensorflow implementation of ROBEZ)
 
-A1. The times for Adam are higher because of the fact that Adam does not support sparse gradients. So internally, with adam it uses dense gradients which is the issue. This can be resolved, however, using "LazyAdam" in tensorflow-addons The results of the (tensorflow code on my machine) are as follows. I have generated others as well for everything to be comparable (due to machine change)
+A1. The times for Adam are higher because of the fact that Adam does not support sparse gradients. So internally, with adam it uses dense gradients which is the issue. This can be resolved, however, using "LazyAdam" in tensorflow-addons The results of the (tensorflow code on my machine) are as follows. I have generated others as well for everything to be comparable (due to machine change) [tensorflow benchmark(victors) code](../)
 
 On 1 CPU:
 
@@ -24,7 +24,7 @@ On 1 CPU:
 
 Q2. ROBE-Z times are much worse than the full embedding even when low memory footprint like (1MB or 10MB) Why is it so ? How to fix it ?
 
-A2. A lot is hidden in the tensorflow implementation. Specifically it is not clear as to when using ROBE-Z whether we are using sparse gradients / dense gradients, whether the hash computation is being added to the computational graph ( as it is using auto-differentiation functionality) and so on. In any case, I thought it would be wiser to benchmark my implementation of ROBE-Z . The results below are from a simple implementation of ROBE-Z in pytorch ( as i am not familiar with tensorflow)
+A2. A lot is hidden in the tensorflow implementation. Specifically it is not clear as to when using ROBE-Z whether we are using sparse gradients / dense gradients, whether the hash computation is being added to the computational graph ( as it is using auto-differentiation functionality) and so on. In any case, I thought it would be wiser to benchmark my implementation of ROBE-Z . The results below are from a simple implementation of ROBE-Z in pytorch ( as i am not familiar with tensorflow) [pytorch benchmark](../cpu_robez/)
 
 a) First note that sparse gradients are good for full embedding table where memory footprint is large.  ( in pytorch below adam with sparse is using sparseadam)
 
@@ -94,6 +94,12 @@ On 10 CPUS
 | FullEmbedding  | True     | 32768 | 100000000 |  5.62251 |   14.1575 | 444.051    |    463.831  | 381.5MB | adam    |
 |----------------|----------|-------|-----------|----------|-----------|------------|-------------|---------|---------|
 
+Q. Are there latency improvements possible to this code?
+A. 
+ -  This version of ROBE-Z uses pytorch for vectorized operations. I am sure it can be improved with custom code
+ -  It uses hash function with mod operations which are slow. with cheaper hash functions, it can be improved further ()
+
 Full details : (pytorch ROBE-Z : )[pytorch benchmark](../cpu_robez/)
+
 Full details : (tensorflow ROBE-Z (victors code): )[tensorflow benchmark](../)
 
