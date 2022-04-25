@@ -94,6 +94,6 @@ On 10 CPUS
 | FullEmbedding  | True     | 32768 | 100000000 |  5.62251 |   14.1575 | 444.051    |    463.831  | 381.5MB | adam    |
 |----------------|----------|-------|-----------|----------|-----------|------------|-------------|---------|---------|
 
-Full details : (pytorch ROBE-Z : )[pytorch benchmark](../cpu_robez/README.md)
-Full details : (tensorflow ROBE-Z (victors code): )[tensorflow benchmark](../README.md)
+Full details : (pytorch ROBE-Z : )[pytorch benchmark](../cpu_robez/)
+Full details : (tensorflow ROBE-Z (victors code): )[tensorflow benchmark](../)
 
