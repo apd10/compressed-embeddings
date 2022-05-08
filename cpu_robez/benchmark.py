@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import pdb
 from tabulate import tabulate
+from RobezEmbedding import RobezFunction
 
 def count_parameters(model):
     num = np.sum([p.numel() for p in model.parameters()])
@@ -82,8 +83,14 @@ def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_s
                             optimizer.zero_grad()
     
                         forward_pass = np.mean(forward_pass[2:])
+                        hashing = np.mean(RobezFunction.hashing[2:])
+                        lookup = np.mean(RobezFunction.lookup[2:])
+                        other = np.mean(RobezFunction.other[2:])
                         gradient_computation = np.mean(gradient_computation[2:])
                         backward_pass = np.mean(backward_pass[2:])
+                        RobezFunction.hashing.clear()
+                        RobezFunction.lookup.clear()
+                        RobezFunction.other.clear()
 
     
                         infos = pd.DataFrame(
@@ -93,6 +100,9 @@ def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_s
                                 "bs": [bs],
                                 "mem_params": [mem],
                                 "forward(ms)": [forward_pass * 1000],
+                                "hashing(ms)": [hashing * 1000],
+                                "lookup(ms)": [lookup * 1000],
+                                "other(ms)": [other * 1000],
                                 "gradcomp(ms)": [gradient_computation * 1000],
                                 "backward(ms)": [backward_pass * 1000],
                                 "total(ms)": [forward_pass * 1000 + gradient_computation * 1000 + backward_pass * 1000],
@@ -102,7 +112,6 @@ def benchmark(nb_embeddings:int, embeding_dim:int, batch_sizes: List[int], mem_s
                         )
                         print(infos)
                         report = report.append(infos)
-
     return report
 
 

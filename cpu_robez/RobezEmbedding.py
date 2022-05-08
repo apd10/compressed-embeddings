@@ -7,20 +7,33 @@ import numpy as np
 from torch.nn.parameter import Parameter
 import math
 import pdb
+import time
 
 
 class RobezFunction(torch.autograd.Function):
+    hashing = []
+    lookup = []
+    other = []
+
     @staticmethod
     def forward(ctx, hashed_weights, indices, embedding_dim, val_offset, P, A, B, C, hashed_weights_size, helper_E1sR, helper_Eidx_base, helper_Eidx_offset, robez_chunk_size, sparse):
         assert(indices.dim() == 1) # indices has tobe a one dimensional array of integers.
         # universal hashing
         #hashed_idx = ((((((indices.view(-1,1) + val_offset) * helper_E1sR) %P  + helper_Eidx_base * B) %P  + A) % P) % (hashed_weights_size -robez_chunk_size +1) + helper_Eidx_offset)
         #hashed_idx = ((((((indices.view(-1,1) + val_offset) * helper_E1sR)  + helper_Eidx_base * B) + A) % P) % (hashed_weights_size -robez_chunk_size +1) + helper_Eidx_offset)
+
+        ts1 = time.perf_counter()
         hashed_idx = ((((((indices.view(-1,1) + val_offset) * helper_E1sR)  + helper_Eidx_base * B) + A) % P) % (hashed_weights_size -robez_chunk_size +1) + helper_Eidx_offset)
+        ts2 = time.perf_counter()
         output = hashed_weights[hashed_idx]
+        ts3 = time.perf_counter()
         ctx.save_for_backward(indices, hashed_idx)
         ctx.hashed_weights_size = hashed_weights_size
         ctx.sparse = sparse
+        ts4 = time.perf_counter()
+        RobezFunction.hashing.append(ts2 - ts1)
+        RobezFunction.lookup.append(ts3 - ts2)
+        RobezFunction.other.append(ts4 - ts3)
         return output
 
 
