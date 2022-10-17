@@ -5,12 +5,13 @@
 #include <ATen/ParallelOpenMP.h>
 #include <chrono>
 
-torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C)
+torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
 {
     torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
-    int64_t max_bit_mask = (1<<max_bits) -1;
+    //int64_t max_bit_mask = (1<<max_bits) -1;
+    int64_t size = 1 <<max_bits; // not exact
     
-    #pragma omp parallel if (!omp_in_parallel()) default(none) shared(out, indices, chunk_size, dimension, max_bit_mask, A, B, C)
+    #pragma omp parallel if (!omp_in_parallel()) default(none) shared(out, indices, chunk_size, dimension, size, A, B, C, P)
     {
         int64_t tid = omp_get_thread_num();
         int64_t num_threads = omp_get_num_threads();
@@ -22,7 +23,7 @@ torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int 
         for (int64_t i = start; i < end; i++) {
             for(int64_t j = 0; j < dimension; j++) {
                 if ( j % chunk_size == 0 ){
-                    base = (A * (i+1) + B * (j+1) + C) & max_bit_mask;
+                    base = (A * (i+1) + B * (j+1) + C) % P % size;
                     out[i][j] = base;
                 } else {
                     out[i][j] = ++base;
@@ -34,17 +35,18 @@ torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int 
 }
 
 
-torch::Tensor sin_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C)
+torch::Tensor sin_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
 {
   torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
-  int64_t max_bit_mask = (1<<max_bits) -1;
+  //int64_t max_bit_mask = (1<<max_bits) -1;
+  int64_t size = 1 <<max_bits; // not exact
   int64_t base = 0, idx = 0;
   int64_t num_chunks = int((dimension + chunk_size - 1) / chunk_size);
   int64_t i = 0, j = 0, k = 0;
 
   for (i = 0; i < indices.size(0); i++) {
     for(j = 0; j < num_chunks; j++) {
-      base = (A * (i+1) + B * (j+1) + C) & max_bit_mask;
+      base = (A * (i+1) + B * (j+1) + C) % P % size;
       idx = j*chunk_size;
       out[i][idx] = base;
       for(k = j*chunk_size + 1;  (k < dimension) && (k < (j+1)*chunk_size); k ++){
@@ -71,7 +73,7 @@ void  cpp_interface_time(int num, int dim, int batch, int chunk_size){ // 0: sin
     int64_t C = 1986670565;
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     for(int i = 0; i < num; i++) {
-        torch::Tensor hashed_idx = par_idx(indices[i],  dim, chunk_size, 21, A, B, C);
+        torch::Tensor hashed_idx = par_idx(indices[i],  dim, chunk_size, 21, A, B, C, P);
     }
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::cout << "time taken per " << batch << "x" << dim << " is " << (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() / num) << std::endl;
