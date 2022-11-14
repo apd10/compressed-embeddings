@@ -38,5 +38,13 @@ dimension = 128
 | cpp interface  | 274ms        |
 | python interface| 268ms       |
 
-
-
+Run the following for the comparison
+```
+taskset -c 5 python3 python_interface.py
+```
+|desc|function|time|
+|----------------|--------------|--------------|
+|pure python | par_idx_py | 2.71ms|
+|omp cpp | get_idx_p | 1.08ms|
+|single cpp| get_idx_s | 0.21ms|
+|single cpp(tabulation| s_tab | 0.14ms|
