@@ -1,0 +1,37 @@
+# packages in environment at /home/apd10/anaconda3/envs/latesttorch.cpu:
+#
+# Name                    Version                   Build  Channel
+_libgcc_mutex             0.1                        main    defaults
+_openmp_mutex             5.1                       1_gnu    defaults
+blas                      1.0                         mkl    defaults
+ca-certificates           2022.10.11           h06a4308_0    defaults
+certifi                   2022.9.24        py38h06a4308_0    defaults
+cpuonly                   2.0                           0    pytorch
+cudatoolkit               11.3.1               h2bc3f7f_2    defaults
+intel-openmp              2022.1.0          h9e868ea_3769    defaults
+ld_impl_linux-64          2.38                 h1181459_1    defaults
+libffi                    3.3                  he6710b0_2    defaults
+libgcc-ng                 11.2.0               h1234567_1    defaults
+libgomp                   11.2.0               h1234567_1    defaults
+libstdcxx-ng              11.2.0               h1234567_1    defaults
+mkl                       2020.2                      256    defaults
+mkl-service               2.3.0            py38he904b0f_0    defaults
+mkl_fft                   1.3.0            py38h54f3939_0    defaults
+mkl_random                1.1.1            py38h0573a6f_0    defaults
+ncurses                   6.3                  h5eee18b_3    defaults
+numpy                     1.19.2           py38h54aff64_0    defaults
+numpy-base                1.19.2           py38hfa32c7d_0    defaults
+openssl                   1.1.1s               h7f8727e_0    defaults
+pip                       22.2.2           py38h06a4308_0    defaults
+python                    3.8.13               haa1d7c7_1    defaults
+pytorch                   1.12.0              py3.8_cpu_0    pytorch
+pytorch-mutex             1.0                         cpu    pytorch
+readline                  8.2                  h5eee18b_0    defaults
+setuptools                65.5.0           py38h06a4308_0    defaults
+six                       1.16.0             pyhd3eb1b0_1    defaults
+sqlite                    3.39.3               h5082296_0    defaults
+tk                        8.6.12               h1ccaba5_0    defaults
+typing_extensions         4.3.0            py38h06a4308_0    defaults
+wheel                     0.37.1             pyhd3eb1b0_0    defaults
+xz                        5.2.6                h5eee18b_0    defaults
+zlib                      1.2.13               h5eee18b_0    defaults
