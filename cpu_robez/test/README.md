@@ -30,7 +30,7 @@ power management: ts ttp tm hwpstate cpb eff_freq_ro [13] [14]
 ```
 batch size = 1024 
 dimension = 128
-
+Before fix:
 1 CPU 
 | implementation | time 1024x128|
 |----------------|--------------|
@@ -38,6 +38,8 @@ dimension = 128
 | cpp interface  | 274ms        |
 | python interface| 268ms       |
 
+After fix 
+1CPU
 Run the following for the comparison
 ```
 taskset -c 5 python3 python_interface.py
