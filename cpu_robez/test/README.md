@@ -1,3 +1,17 @@
+# steps to run.
+1. create a new empty environ with conda / pip with latest python (3.8/3.9)
+2. install pytorch using pip/conda in accordance with pytorch.org installation
+3. cd into this folder, run 
+```
+python3 setup.py install
+```
+4. run
+```
+taskset -c <num-cores> python3 python_interface.py
+```
+
+
+
 processor info. (64 cores per node. 2 nodes)
 ```
 processor       : 0
