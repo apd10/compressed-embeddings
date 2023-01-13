@@ -1,4 +1,4 @@
-# steps to run.
+## steps to run.
 1. create a new empty environ with conda / pip with latest python (3.8/3.9)
 2. install pytorch using pip/conda in accordance with pytorch.org installation
 3. cd into this folder, run 
@@ -12,7 +12,7 @@ taskset -c <num-cores> python3 python_interface.py
 
 
 
-processor info. (64 cores per node. 2 nodes)
+## processor info. (64 cores per node. 2 nodes)
 ```
 processor       : 0
 vendor_id       : AuthenticAMD
@@ -42,6 +42,7 @@ cache_alignment : 64
 address sizes   : 43 bits physical, 48 bits virtual
 power management: ts ttp tm hwpstate cpb eff_freq_ro [13] [14]
 ```
+## results before fix
 batch size = 1024 
 dimension = 128
 Before fix:
@@ -52,7 +53,7 @@ Before fix:
 | cpp interface  | 274ms        |
 | python interface| 268ms       |
 
-After fix 
+##  After fix 
 1CPU
 Run the following for the comparison
 ```
