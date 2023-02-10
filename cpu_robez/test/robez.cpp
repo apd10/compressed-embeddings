@@ -7,13 +7,13 @@
 
 
 
-torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
+torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int64_t size, int64_t A, int64_t B, int64_t C, int64_t P)
 {
     torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
     auto out_accessor = out.accessor<int64_t, 2>();
     auto indices_accessor = indices.accessor<int64_t, 1>();
     //int64_t max_bit_mask = (1<<max_bits) -1;
-    int64_t size = 1 <<max_bits; // not exact
+    //int64_t size = 1 <<max_bits; // not exact
     
     #pragma omp parallel if (!omp_in_parallel()) default(none) shared(out, indices, indices_accessor, out_accessor, chunk_size, dimension, size, A, B, C, P)
     {
@@ -27,7 +27,7 @@ torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int 
         for (int64_t i = start; i < end; i++) {
             for(int64_t j = 0; j < dimension; j++) {
                 if ( j % chunk_size == 0 ){
-                    base = (A * (indices_accessor[i]) + B * ((j / chunk_size) +1) + C) % P % size;
+                    base = (A * (indices_accessor[i]) + B * ((j / chunk_size) +1) + C) % P % (size - chunk_size);
                     out_accessor[i][j] = base;
                 } else {
                     out_accessor[i][j] = ++base;
@@ -39,20 +39,81 @@ torch::Tensor par_idx(torch::Tensor indices, int dimension, int chunk_size, int 
 }
 
 
-torch::Tensor sin_idx(torch::Tensor indices, int dimension, int chunk_size, int max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
+torch::Tensor par_idx_power2(torch::Tensor indices, int dimension, int chunk_size, int64_t max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
+{
+    // expects size to be chunk_size + 1<<bits
+    torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
+    auto out_accessor = out.accessor<int64_t, 2>();
+    auto indices_accessor = indices.accessor<int64_t, 1>();
+    int64_t max_bit_mask = (1<<max_bits) -1;
+    //int64_t size = 1 <<max_bits; // not exact
+    
+    #pragma omp parallel if (!omp_in_parallel()) default(none) shared(out, indices, indices_accessor, out_accessor, chunk_size, dimension, A, B, C, P, max_bit_mask)
+    {
+        int64_t tid = omp_get_thread_num();
+        int64_t num_threads = omp_get_num_threads();
+        int64_t num_ids = ((indices.size(0) + num_threads -1) / num_threads);
+        int64_t start = num_ids * tid;
+        int64_t end = std::min(indices.size(0), num_ids * (1 + tid));
+        int64_t base = 0;
+
+        for (int64_t i = start; i < end; i++) {
+            for(int64_t j = 0; j < dimension; j++) {
+                if ( j % chunk_size == 0 ){
+                    base = (A * (indices_accessor[i]) + B * ((j / chunk_size) +1) + C) & max_bit_mask;
+                    out_accessor[i][j] = base;
+                } else {
+                    out_accessor[i][j] = ++base;
+                }
+            }
+        }
+    }
+    return out;
+}
+
+
+torch::Tensor sin_idx(torch::Tensor indices, int dimension, int chunk_size, int64_t size, int64_t A, int64_t B, int64_t C, int64_t P)
 {
   torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
   auto out_accessor = out.accessor<int64_t, 2>();
   auto indices_accessor = indices.accessor<int64_t, 1>();
   //int64_t max_bit_mask = (1<<max_bits) -1;
-  int64_t size = 1 <<max_bits; // not exact
+  //int64_t size = 1 <<max_bits; // not exact
   int64_t base = 0, idx = 0;
   int64_t num_chunks = int((dimension + chunk_size - 1) / chunk_size);
   int64_t i = 0, j = 0, k = 0;
+  int64_t indices_size = indices.size(0);
 
-  for (i = 0; i < indices.size(0); i++) {
+  for (i = 0; i < indices_size; i++) {
     for(j = 0; j < num_chunks; j++) {
-      base = (A * (indices_accessor[i]) + B * ((j) +1) + C) % P % size;
+      base = (A * (indices_accessor[i]) + B * ((j) +1) + C) % P % (size - chunk_size);
+      idx = j*chunk_size;
+      out_accessor[i][idx] = base;
+      for(k = j*chunk_size + 1;  (k < dimension) && (k < (j+1)*chunk_size); k ++){
+        out_accessor[i][++idx] = ++base;
+      }
+    }
+  }
+  return out;
+}
+
+
+torch::Tensor sin_idx_power2(torch::Tensor indices, int dimension, int chunk_size, int64_t max_bits, int64_t A, int64_t B, int64_t C, int64_t P)
+{
+  // the expected size is 1<< bits + chunk_size
+  torch::Tensor out = at::empty({indices.size(0), dimension}, indices.options());
+  auto out_accessor = out.accessor<int64_t, 2>();
+  auto indices_accessor = indices.accessor<int64_t, 1>();
+  int64_t max_bit_mask = (1<<max_bits) -1;
+  //int64_t size = 1 <<max_bits; // not exact
+  int64_t base = 0, idx = 0;
+  int64_t num_chunks = int((dimension + chunk_size - 1) / chunk_size);
+  int64_t i = 0, j = 0, k = 0;
+  int64_t indices_size = indices.size(0);
+
+  for (i = 0; i < indices_size; i++) {
+    for(j = 0; j < num_chunks; j++) {
+      base = (A * (indices_accessor[i]) + B * ((j) +1) + C) & max_bit_mask;
       idx = j*chunk_size;
       out_accessor[i][idx] = base;
       for(k = j*chunk_size + 1;  (k < dimension) && (k < (j+1)*chunk_size); k ++){
@@ -127,6 +188,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("get_idx", &sin_idx, "get_idx");
     m.def("get_idx_p", &par_idx, "get_idx");
     m.def("get_idx_s", &sin_idx, "get_idx");
+    m.def("get_idx_p_power2", &par_idx_power2, "get_idx");
+    m.def("get_idx_s_power2", &sin_idx_power2, "get_idx");
     m.def("get_idx_st", &sin_tab_idx, "get_idx");
     m.def("get_idx_z", &zer_idx, "get_idx");
     m.def("cpp_interface_time", &cpp_interface_time, "time in cpp");

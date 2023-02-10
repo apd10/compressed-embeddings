@@ -1,5 +1,5 @@
 import torch
-from robe import get_idx_p, get_idx_s, get_idx_st
+from robe import get_idx_p, get_idx_s, get_idx_st, get_idx_p_power2, get_idx_s_power2
 from robez import par_idx_py
 
 import time
@@ -20,7 +20,15 @@ C = 1986670565
 def run(func):
     start = time.time()
     for i in range(indices.shape[0]):
-        hashed_idx = func(indices[i], dim, chunk, 21, A, B, C, P)
+        hashed_idx = func(indices[i], dim, chunk, 2700000, A, B, C, P)
+    end = time.time()
+    print("time taken for  size 1024x128 is", (end - start) / 100 * 1000, "ms")
+    return hashed_idx
+
+def run_bits(func):
+    start = time.time()
+    for i in range(indices.shape[0]):
+        hashed_idx = func(indices[i], dim, chunk, 22, A, B, C, P)
     end = time.time()
     print("time taken for  size 1024x128 is", (end - start) / 100 * 1000, "ms")
     return hashed_idx
@@ -54,6 +62,11 @@ else:
     for func in [par_idx_py, get_idx_p, get_idx_s]:
         print(" --------", func, "------------")
         hashed_idx = run(func)
+        print(hashed_idx)
+
+    for func in [get_idx_p_power2, get_idx_s_power2]:
+        print(" --------", func, "------------")
+        hashed_idx = run_bits(func)
         print(hashed_idx)
 
     print(" -------- s_tabulation ------------")
